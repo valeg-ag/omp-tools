@@ -1,0 +1,85 @@
+{
+	"name": "omp-tools",
+	"displayName": "omp-tools",
+	"description": "Omp tools",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.38.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:omp-tools.runScriptAtBase",
+		"onCommand:omp-tools.runScriptAtBaseAndSaveHistory",
+		"onCommand:omp-tools.runScriptAtAllBases"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "omp-tools.runScriptAtBase",
+				"title": "Omp: Run Script At Base..."
+			},
+			{
+				"command": "omp-tools.runScriptAtBaseAndSaveHistory",
+				"title": "Omp: Run Script At Base And Save In SCRIPT_HISTORY..."
+			},
+			{
+				"command": "omp-tools.runScriptAtAllBases",
+				"title": "Omp: Run Script At All Bases..."
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "omp-tools.runScriptAtAllBases",
+					"when": "editorLangId == sql"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "Omp",
+				"properties": {
+					"ompDbIni.path": {
+						"type": "string",
+						"default": "\\\\omp04\\Omega\\Weekly\\App32\\ini\\OMP_DB.ini"
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.6",
+		"@types/node": "^10.12.21",
+		"@types/vscode": "^1.38.0",
+		"electron-rebuild": "^1.8.6",
+		"glob": "^7.1.4",
+		"mocha": "^6.1.4",
+		"tslint": "^5.12.1",
+		"typescript": "^3.3.1",
+		"vscode-test": "^1.2.0"
+	},
+	"dependencies": {
+		"@types/async": "^3.0.2",
+		"@types/oracledb": "^4.0.4",
+		"@types/shelljs": "^0.8.5",
+		"@types/tmp": "^0.1.0",
+		"async": "^3.1.0",
+		"iconv-lite": "^0.5.0",
+		"oracledb": "github:oracle/node-oracledb#v3.0.1",
+		"path": "^0.12.7",
+		"require-rebuild": "^1.2.8",
+		"shelljs": "^0.8.3",
+		"tmp": "^0.1.0"
+	}
+}
