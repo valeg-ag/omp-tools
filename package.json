@@ -2,6 +2,7 @@
 	"name": "omp-tools",
 	"displayName": "omp-tools",
 	"description": "Omp tools",
+	"publisher": "avs",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.38.0"
@@ -56,6 +57,10 @@
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile",
 		"test": "node ./out/test/runTest.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/valeg-ag/omp-tools.git"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
