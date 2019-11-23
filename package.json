@@ -3,9 +3,9 @@
 	"displayName": "omp-tools",
 	"description": "Omp tools",
 	"publisher": "avs",
-	"version": "0.0.2",
+	"version": "0.0.4",
 	"engines": {
-		"vscode": "^1.38.0"
+		"vscode": "^1.40.1"
 	},
 	"categories": [
 		"Other"
@@ -67,7 +67,6 @@
 		"@types/mocha": "^5.2.6",
 		"@types/node": "^10.12.21",
 		"@types/vscode": "^1.38.0",
-		"electron-rebuild": "^1.8.6",
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
 		"tslint": "^5.12.1",
@@ -80,8 +79,9 @@
 		"@types/shelljs": "^0.8.5",
 		"@types/tmp": "^0.1.0",
 		"async": "^3.1.0",
+		"electron-rebuild": "^1.8.8",
 		"iconv-lite": "^0.5.0",
-		"oracledb": "github:oracle/node-oracledb#v3.0.1",
+		"oracledb": "^4.0.1",
 		"path": "^0.12.7",
 		"require-rebuild": "^1.2.8",
 		"shelljs": "^0.8.3",

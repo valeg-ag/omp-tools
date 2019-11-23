@@ -23,6 +23,9 @@ export function runInSqlplus(db: any, sqlText: string) {
 
   const login =`${db.schema}/${db.schema}@${db.server}`;
   const sqlplusCmd = `echo rollback; | sqlplus -S ${login} @${sqlFileName}`;
+
+  shell.config.execPath = shell.which('node').toString() // bug in shelljs. see https://github.com/shelljs/shelljs/issues/480
+
   const sqlplusProc = shell.exec(sqlplusCmd, { encoding: 'buffer' } );
   const stdout: any = sqlplusProc.stdout
 
