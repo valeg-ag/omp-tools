@@ -19,16 +19,22 @@ function ascForDbAndDoSqlCommand(cmd) {
         showError('Команда доступа только при открытом редакторе');
         return;
     }
-    const { dbIndex, dbDescs } = dbIniParser.parseDbIni();
-    vscode.window.showQuickPick(dbDescs, { canPickMany: false, placeHolder: 'Choose Database...' })
-        .then((chosen) => {
-        if (undefined === chosen)
-            return;
-        let db = dbIndex[chosen];
-        cmd(db, te);
-    }, (err) => {
+    try {
+        const { dbIndex, dbDescs } = dbIniParser.parseDbIni();
+        vscode.window.showQuickPick(dbDescs, { canPickMany: false, placeHolder: 'Choose Database...' })
+            .then((chosen) => {
+            if (undefined === chosen) {
+                return;
+            }
+            let db = dbIndex[chosen];
+            cmd(db, te);
+        }, (err) => {
+            showError(err.message);
+        });
+    }
+    catch (err) {
         showError(err.message);
-    });
+    }
 }
 function activate(context) {
     let channel = vscode.window.createOutputChannel('Omega SQL');
@@ -42,8 +48,13 @@ function activate(context) {
     }
     let disposable1 = vscode.commands.registerCommand('omp-tools.runScriptAtBase', function () {
         ascForDbAndDoSqlCommand((db, te) => {
-            const sqlplusStdout = dbUtils.runInSqlplus(db, te.document.getText());
-            showSqlResults(db, sqlplusStdout);
+            try {
+                const sqlplusStdout = dbUtils.runInSqlplus(db, te.document.getText());
+                showSqlResults(db, sqlplusStdout);
+            }
+            catch (err) {
+                showError(err.message);
+            }
         });
     });
     let disposable2 = vscode.commands.registerCommand('omp-tools.runScriptAtBaseAndSaveHistory', function () {
@@ -56,8 +67,9 @@ function activate(context) {
             vscode.window.showErrorMessage('Сохраните sql-скрипт под уникальным именем');
             return;
         }
-        if (te.document.isDirty)
+        if (te.document.isDirty) {
             te.document.save();
+        }
         const fileName = path.basename(te.document.fileName);
         let conn;
         ascForDbAndDoSqlCommand((db, te) => {
@@ -81,8 +93,9 @@ function activate(context) {
                 showError(err.message);
             })
                 .then(() => {
-                if (conn)
+                if (conn) {
                     conn.close();
+                }
             });
         });
     });

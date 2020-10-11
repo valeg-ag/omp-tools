@@ -21,29 +21,34 @@ function ascForDbAndDoSqlCommand(cmd: any) {
         return;
     }
 
-    const { dbIndex, dbDescs } = dbIniParser.parseDbIni();
+    try {
+        const { dbIndex, dbDescs } = dbIniParser.parseDbIni();
 
-    vscode.window.showQuickPick( dbDescs, { canPickMany: false, placeHolder: 'Choose Database...' } )
-        .then( (chosen) => { 
-            if(undefined === chosen)
-                return;
+        vscode.window.showQuickPick( dbDescs, { canPickMany: false, placeHolder: 'Choose Database...' } )
+            .then( (chosen) => { 
+                if(undefined === chosen) {
+                    return;
+                }
 
-            let db = dbIndex[ chosen ];
+                let db = dbIndex[ chosen ];
 
-            cmd(db, te);
-        },
-        (err) => {
-            showError(err.message);
-        } );
+                cmd(db, te);
+            },
+            (err) => {
+                showError(err.message);
+            } );
+    } catch (err) {
+        showError(err.message);
+    }
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    let channel = vscode.window.createOutputChannel('Omega SQL')
+    let channel = vscode.window.createOutputChannel('Omega SQL');
 
     function showSqlResults(db: any, sqlplusStdout: string) {
         showInfo(`Скрипт был запущен на '${db.schema}@${db.server}' - ${db.name}`);
 
-        let formatedSqlplusStdout = sqlplusStdout.split('\r\n\r\n').join('\n')
+        let formatedSqlplusStdout = sqlplusStdout.split('\r\n\r\n').join('\n');
 
         channel.clear();
         channel.appendLine(`  --- ${db.schema}@${db.server} - ${db.name} ---`);
@@ -53,8 +58,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     let disposable1 = vscode.commands.registerCommand('omp-tools.runScriptAtBase', function () {
         ascForDbAndDoSqlCommand( (db: any, te: any) => {
-            const sqlplusStdout = dbUtils.runInSqlplus(db, te.document.getText());
-            showSqlResults(db, sqlplusStdout);
+            try {
+                const sqlplusStdout = dbUtils.runInSqlplus(db, te.document.getText());
+                showSqlResults(db, sqlplusStdout);
+            } catch(err) {
+                showError(err.message);
+            }
         });
     } );
 
@@ -70,8 +79,9 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        if( te.document.isDirty )
+        if( te.document.isDirty ) {
           te.document.save();
+        }
 
         const fileName = path.basename(te.document.fileName);
 
@@ -81,12 +91,12 @@ export function activate(context: vscode.ExtensionContext) {
             oracledb.getConnection({ user: db.schema, password: db.schema, connectString : db.server })
                 .then((c) => {	
                     conn = c;
-                    return conn.execute('select recdate from script_history where upper(name) = upper(:fileName)', [fileName])
+                    return conn.execute('select recdate from script_history where upper(name) = upper(:fileName)', [fileName]);
                 })
                 .then((result: any) => {
                         if (result.rows.length !== 0) {
                             const dt = result.rows[0][0];
-                            const dtStr = `${dt.toLocaleDateString('ru')} в ${dt.toLocaleTimeString('ru')}`
+                            const dtStr = `${dt.toLocaleDateString('ru')} в ${dt.toLocaleTimeString('ru')}`;
                             vscode.window.showErrorMessage(
                                 `Скрипт ${fileName} уже запускался на базе ${db.schema}@${db.server} ${dtStr}`);
                             return;
@@ -100,9 +110,10 @@ export function activate(context: vscode.ExtensionContext) {
                     showError(err.message);
                 })
                 .then(() => {  // finally
-                    if(conn)
+                    if(conn) {
                         conn.close();
-                })
+                    }
+                });
         });
     } );
 
@@ -204,7 +215,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             q.drain(() => {
                 console.log('all completed');
-            })
+            });
 
             quickPick.selectedItems.forEach((selItem: any) => {
                 q.push(selItem.db);

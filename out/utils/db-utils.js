@@ -20,7 +20,11 @@ function runInSqlplus(db, sqlText) {
     const sqlFileName = makeTmpFileWithSql(sqlText);
     const login = `${db.schema}/${db.schema}@${db.server}`;
     const sqlplusCmd = `echo rollback; | sqlplus -S ${login} @${sqlFileName}`;
-    shell.config.execPath = shell.which('node').toString(); // bug in shelljs. see https://github.com/shelljs/shelljs/issues/480
+    const nodePath = shell.which('node'); // bug in shelljs. see https://github.com/shelljs/shelljs/issues/480
+    if (!nodePath) {
+        throw new Error('Не удалось найти node. Для работы данной команды необходимо наличие установленного node.js');
+    }
+    shell.config.execPath = nodePath.toString();
     const sqlplusProc = shell.exec(sqlplusCmd, { encoding: 'buffer' });
     const stdout = sqlplusProc.stdout;
     return iconvlite.decode(stdout, 'win1251');

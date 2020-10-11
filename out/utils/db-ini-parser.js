@@ -10,22 +10,26 @@ function parseDbIni() {
     let version = '';
     let lines = ompDbFileStr.split(/\r?\n/);
     let dbList = lines.map((line) => {
-        if (!line.startsWith('Schema'))
+        if (!line.startsWith('Schema')) {
             return undefined;
+        }
         let n = line.indexOf('=');
-        if (-1 === n)
+        if (-1 === n) {
             return undefined;
+        }
         line = line.substr(n + 1);
         n = line.indexOf('@');
-        if (-1 === n)
+        if (-1 === n) {
             return undefined;
+        }
         let server = line.substr(0, n).trim();
         //    if( server === 'O' )
         //      return undefined;
         line = line.substr(n + 1);
         n = line.indexOf('@');
-        if (-1 === n)
+        if (-1 === n) {
             return undefined;
+        }
         let schema = line.substr(0, n).trim();
         line = line.substr(n + 1);
         if (server === 'O') {
