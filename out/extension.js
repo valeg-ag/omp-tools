@@ -109,7 +109,6 @@ function activate(context) {
                     user: db_name,
                     password: db_name,
                     database: db_name,
-                    client_encoding: 'windows1251'
                 });
                 client.connect().then(() => {
                     return client.query('select recdate::timestamp from script_history where lower(name) like $1::text', [fileNameMask]);

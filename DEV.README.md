@@ -41,6 +41,16 @@ Created: D:\projects\ompext4\ompext-0.0.1.vsix (3114 files, 12.82MB)
 
 4. Publish extension
 
+There are two options to publish extension:
+
+4.1 vsce publish
+
 ```bash
 > vsce publish
 ```
+
+4.2 manual
+
+4.2.1 Open https://marketplace.visualstudio.com/manage/publishers/avs in browser
+4.2.2 Right click on the row with extension
+4.2.3 Choose `Update` command

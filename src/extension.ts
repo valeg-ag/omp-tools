@@ -128,12 +128,12 @@ export function activate(context: vscode.ExtensionContext) {
                     user: db_name,
                     password: db_name,
                     database: db_name,
-                    client_encoding: 'windows1251'});
+                    /*client_encoding: 'windows1251'*/});
 
                 client.connect().then(() => {
                     return client.query('select recdate::timestamp from script_history where lower(name) like $1::text', [fileNameMask])
                 })
-                .then((result) => {
+                .then((result: any) => {
                     if (result.rows.length !== 0) {
                         let dt = result.rows[0].recdate;
                         const dtStr = `${dt.toLocaleDateString('ru')} в ${dt.toLocaleTimeString('ru')}`;
@@ -146,7 +146,7 @@ export function activate(context: vscode.ExtensionContext) {
                     const sqlplusStdout = dbUtils.runInSqlplusOrPsql(db, sqlText);			
                     showSqlResults(db, sqlplusStdout);	
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     showError(err.message);
                 });
             }
