@@ -21,3 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Add error messages in case when extension can't load OMP_DB.ini
 - Add error messages in case when node.js is not installed
+
+## [0.0.5] - 2023-06-13
+### Added
+- Postgres support
