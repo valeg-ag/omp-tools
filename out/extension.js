@@ -5,6 +5,7 @@ const dbIniParser = require("./utils/db-ini-parser");
 const dbUtils = require("./utils/db-utils");
 const path = require("path");
 const oracledb = require("oracledb");
+const pg = require("pg");
 const async = require("async");
 const select_results_panel_1 = require("./select-results-panel");
 function showError(msg) {
@@ -49,7 +50,7 @@ function activate(context) {
     let disposable1 = vscode.commands.registerCommand('omp-tools.runScriptAtBase', function () {
         ascForDbAndDoSqlCommand((db, te) => {
             try {
-                const sqlplusStdout = dbUtils.runInSqlplus(db, te.document.getText());
+                const sqlplusStdout = dbUtils.runInSqlplusOrPsql(db, te.document.getText());
                 showSqlResults(db, sqlplusStdout);
             }
             catch (err) {
@@ -73,30 +74,61 @@ function activate(context) {
         const fileName = path.basename(te.document.fileName);
         let conn;
         ascForDbAndDoSqlCommand((db, te) => {
-            oracledb.getConnection({ user: db.schema, password: db.schema, connectString: db.server })
-                .then((c) => {
-                conn = c;
-                return conn.execute('select recdate from script_history where upper(name) = upper(:fileName)', [fileName]);
-            })
-                .then((result) => {
-                if (result.rows.length !== 0) {
-                    const dt = result.rows[0][0];
-                    const dtStr = `${dt.toLocaleDateString('ru')} в ${dt.toLocaleTimeString('ru')}`;
-                    vscode.window.showErrorMessage(`Скрипт ${fileName} уже запускался на базе ${db.schema}@${db.server} ${dtStr}`);
-                    return;
-                }
-                const sqlText = te.document.getText() + "\n\n" + dbUtils.makeInsertScriptHistoryQuery(fileName);
-                const sqlplusStdout = dbUtils.runInSqlplus(db, sqlText);
-                showSqlResults(db, sqlplusStdout);
-            })
-                .catch((err) => {
-                showError(err.message);
-            })
-                .then(() => {
-                if (conn) {
-                    conn.close();
-                }
-            });
+            if (db.server_type === 'oracle') {
+                oracledb.getConnection({ user: db.schema, password: db.schema, connectString: db.server })
+                    .then((c) => {
+                    conn = c;
+                    return conn.execute('select recdate from script_history where upper(name) = upper(:fileName)', [fileName]);
+                })
+                    .then((result) => {
+                    if (result.rows.length !== 0) {
+                        const dt = result.rows[0][0];
+                        const dtStr = `${dt.toLocaleDateString('ru')} в ${dt.toLocaleTimeString('ru')}`;
+                        vscode.window.showErrorMessage(`Скрипт ${fileName} уже запускался на базе ${db.schema}@${db.server} ${dtStr}`);
+                        return;
+                    }
+                    const sqlText = te.document.getText() + "\n\n" + dbUtils.makeInsertScriptHistoryQuery(fileName);
+                    const sqlplusStdout = dbUtils.runInSqlplusOrPsql(db, sqlText);
+                    showSqlResults(db, sqlplusStdout);
+                })
+                    .catch((err) => {
+                    showError(err.message);
+                })
+                    .then(() => {
+                    if (conn) {
+                        conn.close();
+                    }
+                });
+            }
+            else {
+                const db_name = db.schema.toLowerCase();
+                const dotIndex = fileName.lastIndexOf('.');
+                const fileNameMask = fileName.substr(0, dotIndex).toLowerCase() + '%';
+                const client = new pg.Client({
+                    host: db.server,
+                    user: db_name,
+                    password: db_name,
+                    database: db_name,
+                    client_encoding: 'windows1251'
+                });
+                client.connect().then(() => {
+                    return client.query('select recdate::timestamp from script_history where lower(name) like $1::text', [fileNameMask]);
+                })
+                    .then((result) => {
+                    if (result.rows.length !== 0) {
+                        let dt = result.rows[0].recdate;
+                        const dtStr = `${dt.toLocaleDateString('ru')} в ${dt.toLocaleTimeString('ru')}`;
+                        vscode.window.showErrorMessage(`Скрипт ${fileName} уже запускался на базе ${db.schema}@${db.server} в ${dtStr}`);
+                        return;
+                    }
+                    const sqlText = te.document.getText() + "\n\n" + dbUtils.makeInsertScriptHistoryQuery(fileName);
+                    const sqlplusStdout = dbUtils.runInSqlplusOrPsql(db, sqlText);
+                    showSqlResults(db, sqlplusStdout);
+                })
+                    .catch((err) => {
+                    showError(err.message);
+                });
+            }
         });
     });
     let disposable3 = vscode.commands.registerCommand('omp-tools.runScriptAtAllBases', function () {

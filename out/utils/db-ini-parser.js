@@ -23,9 +23,16 @@ function parseDbIni() {
             return undefined;
         }
         let server = line.substr(0, n).trim();
-        //    if( server === 'O' )
-        //      return undefined;
         line = line.substr(n + 1);
+        let server_type = 'oracle';
+        let server_port = 0;
+        if (server.indexOf('|POSTGRESQL') !== -1) {
+            server_type = 'postgres';
+            const nColon = server.indexOf(':');
+            const nSlash = server.indexOf('|');
+            server_port = parseInt(server.substr(nColon + 1, nSlash - nColon - 1));
+            server = server.substr(0, nColon);
+        }
         n = line.indexOf('@');
         if (-1 === n) {
             return undefined;
@@ -45,7 +52,9 @@ function parseDbIni() {
             return undefined;
         }
         return {
+            'server_type': server_type,
             'server': server,
+            'server_port': server_port,
             'schema': schema,
             'name': line,
             'version': version,
